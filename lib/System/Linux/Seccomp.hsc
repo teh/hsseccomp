@@ -17,6 +17,8 @@ module System.Linux.Seccomp
    , seccomp_export_pfc
    , Action(..)
    , SysCall(..)
+   , ArgCmp(..)
+   , ArgCmpOp(..)
    ) where
 
 import Foreign
@@ -100,7 +102,7 @@ seccomp_export_pfc ctx fd = c_seccomp_export_pfc ctx (fromIntegral fd)
 
 --data ArgumentPosition = A0 | A1 | A2 | A3 | A4 | A5
 
-data ArgCmpOp = NE | LT | LE | EQ | GE | GT | MASQUED_EQ Int
+data ArgCmpOp = NE | LT | LE | EQ | GE | GT | MASQUED_EQ
 data ArgCmp = ArgCmp
     { argCmpPos :: Int
     , argCmpOp :: ArgCmpOp
@@ -115,7 +117,7 @@ argCmpOpToCInt LE = #const SCMP_CMP_LE
 argCmpOpToCInt EQ = #const SCMP_CMP_EQ
 argCmpOpToCInt GE = #const SCMP_CMP_GE
 argCmpOpToCInt GT = #const SCMP_CMP_GT
-argCmpOpToCInt (MASQUED_EQ x) = #const SCMP_CMP_MASKED_EQ
+argCmpOpToCInt MASQUED_EQ = #const SCMP_CMP_MASKED_EQ
 
 instance Storable ArgCmp where
     sizeOf _ = #{size struct scmp_arg_cmp}
