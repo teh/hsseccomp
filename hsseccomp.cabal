@@ -5,7 +5,7 @@ name:                hsseccomp
 version:             0.1.0.0
 synopsis:            Haskell bindings to libseccomp
 -- description:
-license:             Apache-2.0
+license:             LGPL
 license-file:        LICENSE
 author:              Tom Hunger
 maintainer:          tehunger@gmail.com

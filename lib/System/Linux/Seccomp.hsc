@@ -8,6 +8,7 @@ This module provides bindings libseccomp.
 -}
 module System.Linux.Seccomp
    ( seccomp_init
+   , seccomp_reset
    , DefaultAction(..)
    ) where
 
@@ -55,6 +56,12 @@ actionToCInt SCMP_ACT_ALLOW = 0x7fff0000
 seccomp_init :: DefaultAction -> IO (Ptr FilterCtx)
 seccomp_init action = c_seccomp_init (actionToCInt action)
 
+seccomp_reset :: Ptr FilterCtx -> DefaultAction -> IO CInt
+seccomp_reset ctx action = c_seccomp_reset ctx (actionToCInt action)
+
 --  scmp_filter_ctx seccomp_init(uint32_t def_action);
 foreign import ccall unsafe "seccomp_init"
     c_seccomp_init :: CInt -> IO (Ptr FilterCtx)
+
+foreign import ccall "seccomp_reset"
+    c_seccomp_reset :: Ptr FilterCtx -> CInt -> IO CInt
