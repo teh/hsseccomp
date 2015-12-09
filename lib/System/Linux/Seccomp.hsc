@@ -13,7 +13,9 @@ module System.Linux.Seccomp
    ( seccomp_init
    , seccomp_reset
    , seccomp_rule_add_array
+   , seccomp_load
    , Action(..)
+   , SysCall(..)
    ) where
 
 import Foreign
@@ -64,7 +66,8 @@ seccomp_init action = c_seccomp_init (actionToCInt action)
 seccomp_reset :: Ptr CFilterCtx -> Action -> IO CInt
 seccomp_reset ctx action = c_seccomp_reset ctx (actionToCInt action)
 
-
+seccomp_load ::  Ptr CFilterCtx -> IO CInt
+seccomp_load ctx = c_seccomp_load ctx
 
 --  scmp_filter_ctx seccomp_init(uint32_t def_action);
 foreign import ccall unsafe "seccomp_init"
@@ -79,6 +82,9 @@ foreign import ccall "seccomp_reset"
 --                            const struct scmp_arg_cmp *arg_array);
 foreign import ccall "seccomp_rule_add_array"
     c_seccomp_rule_add_array :: Ptr CFilterCtx -> CInt -> CInt -> CInt -> Ptr ArgCmp -> IO CInt
+
+foreign import ccall "seccomp_load"
+    c_seccomp_load :: Ptr CFilterCtx -> IO CInt
 
 --data ArgumentPosition = A0 | A1 | A2 | A3 | A4 | A5
 
