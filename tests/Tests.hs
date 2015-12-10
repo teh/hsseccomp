@@ -28,6 +28,7 @@ killOnAnyOpen = do
     ctx <- S.seccomp_init S.SCMP_ACT_KILL
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCopen []
     _ <- S.seccomp_load ctx
+    S.seccomp_release ctx
     _ <- IO.openFd "/dev/null" IO.ReadOnly Nothing IO.defaultFileFlags
     return ()
 
@@ -37,6 +38,7 @@ killOpenWrite = do
     -- kill on write
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_KILL S.SCopen [S.ArgCmp 1 S.MASQUED_EQ 0x3 0x1]
     _ <- S.seccomp_load ctx
+    S.seccomp_release ctx
     _ <- IO.openFd "/dev/null" IO.WriteOnly Nothing IO.defaultFileFlags
     return ()
 

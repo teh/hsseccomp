@@ -15,6 +15,7 @@ module System.Linux.Seccomp
    , seccomp_rule_add_array
    , seccomp_load
    , seccomp_export_pfc
+   , seccomp_release
    , Action(..)
    , SysCall(..)
    , ArgCmp(..)
@@ -70,6 +71,9 @@ actionToC SCMP_ACT_ALLOW = 0x7fff0000
 seccomp_init :: Action -> IO (Ptr CFilterCtx)
 seccomp_init action = c_seccomp_init (actionToC action)
 
+seccomp_release :: Ptr CFilterCtx -> IO ()
+seccomp_release = c_seccomp_release
+
 seccomp_reset :: Ptr CFilterCtx -> Action -> IO CInt
 seccomp_reset ctx action = c_seccomp_reset ctx (actionToC action)
 
@@ -79,6 +83,10 @@ seccomp_load ctx = c_seccomp_load ctx
 --  scmp_filter_ctx seccomp_init(uint32_t def_action);
 foreign import ccall unsafe "seccomp_init"
     c_seccomp_init :: CULong -> IO (Ptr CFilterCtx)
+
+--  void seccomp_release(scmp_filter_ctx ctx);
+foreign import ccall unsafe "seccomp_release"
+    c_seccomp_release :: Ptr CFilterCtx -> IO ()
 
 foreign import ccall "seccomp_reset"
     c_seccomp_reset :: Ptr CFilterCtx -> CULong -> IO CInt
