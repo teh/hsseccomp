@@ -16,6 +16,7 @@ module System.Linux.Seccomp
    , seccomp_load
    , seccomp_export_pfc
    , seccomp_release
+   , seccomp_syscall_priority
    , Action(..)
    , SysCall(..)
    , ArgCmp(..)
@@ -90,6 +91,14 @@ foreign import ccall unsafe "seccomp_release"
 
 foreign import ccall "seccomp_reset"
     c_seccomp_reset :: Ptr CFilterCtx -> CULong -> IO CInt
+
+-- int seccomp_syscall_priority(scmp_filter_ctx ctx,
+--                              int syscall, uint8_t priority);
+foreign import ccall "seccomp_syscall_priority"
+    c_seccomp_syscall_priority :: Ptr CFilterCtx -> CLong -> Word8 -> IO CInt
+
+seccomp_syscall_priority :: Ptr CFilterCtx -> SysCall -> Word8 -> IO CInt
+seccomp_syscall_priority ctx sysCall priority = c_seccomp_syscall_priority ctx (sysCallToC sysCall) priority
 
 -- int seccomp_rule_add_array(scmp_filter_ctx ctx,
 --                            uint32_t action, int syscall,

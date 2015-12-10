@@ -18,6 +18,10 @@ unitTests = testGroup "Unit tests"
         if ctx /= nullPtr then return () else assertFailure "seccomp_init returned 0"
   , testCase "kill on any open"  $ assertTerminated killOnAnyOpen
   , testCase "kill on write"  $ assertTerminated killOpenWrite
+  , testCase "change priority" $ do
+        ctx <- S.seccomp_init S.SCMP_ACT_KILL
+        r <- S.seccomp_syscall_priority ctx S.SCopen 8
+        assertBool "return code /= 0" (r == 0)
   ]
 
 -- test export
