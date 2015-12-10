@@ -6,7 +6,26 @@ Module      : System.Linux.Seccomp
 Stability   : provisional
 Portability : non-portable (requires Linux)
 
-This module provides bindings libseccomp.
+This module provides partial bindings to libseccomp. It is very low
+level, modelled closely after the c library.
+
+Missing:
+
+ * arch support
+ * name resolving for syscalls (we have an enum)
+
+Simple example: The following kills all systemcalls other than opening
+a file for readonly:
+
+> ctx <- S.seccomp_init S.SCMP_ACT_KILL
+> _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_KILL S.SCopen [S.ArgCmp 1 S.MASQUED_EQ 0x3 0x1]
+> _ <- S.seccomp_load ctx
+> S.seccomp_release ctx
+
+For debugging it's useful to dump a text representation of the filter
+context to stderr (file descriptor number 2):
+
+> S.seccomp_export_pfc ctx 2
 
 -}
 module System.Linux.Seccomp
@@ -34,7 +53,6 @@ import Prelude (IO, ($), length, fromIntegral, undefined)
 #include <unistd.h>
 #include <seccomp.h>
 
-
 data Action =
       SCMP_ACT_KILL
     | SCMP_ACT_TRAP
@@ -44,6 +62,90 @@ data Action =
 
 type CFilterCtx = ()
 
+seccomp_init :: Action -> IO (Ptr CFilterCtx)
+seccomp_init action = c_seccomp_init (actionToC action)
+
+seccomp_release :: Ptr CFilterCtx -> IO ()
+seccomp_release = c_seccomp_release
+
+seccomp_reset :: Ptr CFilterCtx -> Action -> IO CInt
+seccomp_reset ctx action = c_seccomp_reset ctx (actionToC action)
+
+seccomp_load ::  Ptr CFilterCtx -> IO CInt
+seccomp_load ctx = c_seccomp_load ctx
+
+seccomp_merge ::  Ptr CFilterCtx -> Ptr CFilterCtx -> IO CInt
+seccomp_merge dst src = c_seccomp_merge dst src
+
+seccomp_syscall_priority :: Ptr CFilterCtx -> SysCall -> Word8 -> IO CInt
+seccomp_syscall_priority ctx sysCall priority = c_seccomp_syscall_priority ctx (sysCallToC sysCall) priority
+
+seccomp_export_pfc :: Ptr CFilterCtx -> Int -> IO CInt
+seccomp_export_pfc ctx fd = c_seccomp_export_pfc ctx (fromIntegral fd)
+
+seccomp_rule_add_array :: Ptr CFilterCtx -> Action -> SysCall -> [ArgCmp] -> IO CInt
+seccomp_rule_add_array ctx action sysCall argCmps =
+    allocaArray (length argCmps) add
+  where
+    add ptr = do
+        pokeArray ptr argCmps
+        c_seccomp_rule_add_array
+          ctx
+          (actionToC action)
+          (sysCallToC sysCall)
+          (fromIntegral (length argCmps))
+          ptr
+
+--  scmp_filter_ctx seccomp_init(uint32_t def_action);
+foreign import ccall unsafe "seccomp_init"
+    c_seccomp_init :: CULong -> IO (Ptr CFilterCtx)
+
+--  void seccomp_release(scmp_filter_ctx ctx);
+foreign import ccall unsafe "seccomp_release"
+    c_seccomp_release :: Ptr CFilterCtx -> IO ()
+
+foreign import ccall "seccomp_reset"
+    c_seccomp_reset :: Ptr CFilterCtx -> CULong -> IO CInt
+
+foreign import ccall "seccomp_merge"
+    c_seccomp_merge :: Ptr CFilterCtx -> Ptr CFilterCtx -> IO CInt
+
+-- int seccomp_syscall_priority(scmp_filter_ctx ctx,
+--                              int syscall, uint8_t priority);
+foreign import ccall "seccomp_syscall_priority"
+    c_seccomp_syscall_priority :: Ptr CFilterCtx -> CLong -> Word8 -> IO CInt
+
+-- int seccomp_rule_add_array(scmp_filter_ctx ctx,
+--                            uint32_t action, int syscall,
+--                            unsigned int arg_cnt,
+--                            const struct scmp_arg_cmp *arg_array);
+foreign import ccall "seccomp_rule_add_array"
+    c_seccomp_rule_add_array :: Ptr CFilterCtx -> CULong -> CLong -> CInt -> Ptr ArgCmp -> IO CInt
+
+foreign import ccall "seccomp_load"
+    c_seccomp_load :: Ptr CFilterCtx -> IO CInt
+
+foreign import ccall "seccomp_export_pfc"
+    c_seccomp_export_pfc :: Ptr CFilterCtx -> CInt -> IO CInt
+
+--data ArgumentPosition = A0 | A1 | A2 | A3 | A4 | A5
+
+data ArgCmpOp = NE | LT | LE | EQ | GE | GT | MASQUED_EQ
+data ArgCmp = ArgCmp
+    { argCmpPos :: Int
+    , argCmpOp :: ArgCmpOp
+    , argCmpDatumA :: Int
+    , argCmpDatumB :: Int
+    }
+
+argCmpOpToCInt :: ArgCmpOp -> CInt
+argCmpOpToCInt NE = #const SCMP_CMP_NE
+argCmpOpToCInt LT = #const SCMP_CMP_LT
+argCmpOpToCInt LE = #const SCMP_CMP_LE
+argCmpOpToCInt EQ = #const SCMP_CMP_EQ
+argCmpOpToCInt GE = #const SCMP_CMP_GE
+argCmpOpToCInt GT = #const SCMP_CMP_GT
+argCmpOpToCInt MASQUED_EQ = #const SCMP_CMP_MASKED_EQ
 
 -- #define SCMP_ACT_KILL           0x00000000U
 -- /**
@@ -69,79 +171,6 @@ actionToC (SCMP_ACT_ERRNO x) = 0x00050000 .|. ((fromIntegral x) .&. 0x0000ffff)
 actionToC (SCMP_ACT_TRACE x) = 0x7ff00000 .|. ((fromIntegral x) .&. 0x0000ffff)
 actionToC SCMP_ACT_ALLOW = 0x7fff0000
 
-
-seccomp_init :: Action -> IO (Ptr CFilterCtx)
-seccomp_init action = c_seccomp_init (actionToC action)
-
-seccomp_release :: Ptr CFilterCtx -> IO ()
-seccomp_release = c_seccomp_release
-
-seccomp_reset :: Ptr CFilterCtx -> Action -> IO CInt
-seccomp_reset ctx action = c_seccomp_reset ctx (actionToC action)
-
-seccomp_load ::  Ptr CFilterCtx -> IO CInt
-seccomp_load ctx = c_seccomp_load ctx
-
-seccomp_merge ::  Ptr CFilterCtx -> Ptr CFilterCtx -> IO CInt
-seccomp_merge dst src = c_seccomp_merge dst src
-
---  scmp_filter_ctx seccomp_init(uint32_t def_action);
-foreign import ccall unsafe "seccomp_init"
-    c_seccomp_init :: CULong -> IO (Ptr CFilterCtx)
-
---  void seccomp_release(scmp_filter_ctx ctx);
-foreign import ccall unsafe "seccomp_release"
-    c_seccomp_release :: Ptr CFilterCtx -> IO ()
-
-foreign import ccall "seccomp_reset"
-    c_seccomp_reset :: Ptr CFilterCtx -> CULong -> IO CInt
-
-foreign import ccall "seccomp_merge"
-    c_seccomp_merge :: Ptr CFilterCtx -> Ptr CFilterCtx -> IO CInt
-
--- int seccomp_syscall_priority(scmp_filter_ctx ctx,
---                              int syscall, uint8_t priority);
-foreign import ccall "seccomp_syscall_priority"
-    c_seccomp_syscall_priority :: Ptr CFilterCtx -> CLong -> Word8 -> IO CInt
-
-seccomp_syscall_priority :: Ptr CFilterCtx -> SysCall -> Word8 -> IO CInt
-seccomp_syscall_priority ctx sysCall priority = c_seccomp_syscall_priority ctx (sysCallToC sysCall) priority
-
--- int seccomp_rule_add_array(scmp_filter_ctx ctx,
---                            uint32_t action, int syscall,
---                            unsigned int arg_cnt,
---                            const struct scmp_arg_cmp *arg_array);
-foreign import ccall "seccomp_rule_add_array"
-    c_seccomp_rule_add_array :: Ptr CFilterCtx -> CULong -> CLong -> CInt -> Ptr ArgCmp -> IO CInt
-
-foreign import ccall "seccomp_load"
-    c_seccomp_load :: Ptr CFilterCtx -> IO CInt
-
-foreign import ccall "seccomp_export_pfc"
-    c_seccomp_export_pfc :: Ptr CFilterCtx -> CInt -> IO CInt
-
-seccomp_export_pfc :: Ptr CFilterCtx -> Int -> IO CInt
-seccomp_export_pfc ctx fd = c_seccomp_export_pfc ctx (fromIntegral fd)
-
---data ArgumentPosition = A0 | A1 | A2 | A3 | A4 | A5
-
-data ArgCmpOp = NE | LT | LE | EQ | GE | GT | MASQUED_EQ
-data ArgCmp = ArgCmp
-    { argCmpPos :: Int
-    , argCmpOp :: ArgCmpOp
-    , argCmpDatumA :: Int
-    , argCmpDatumB :: Int
-    }
-
-argCmpOpToCInt :: ArgCmpOp -> CInt
-argCmpOpToCInt NE = #const SCMP_CMP_NE
-argCmpOpToCInt LT = #const SCMP_CMP_LT
-argCmpOpToCInt LE = #const SCMP_CMP_LE
-argCmpOpToCInt EQ = #const SCMP_CMP_EQ
-argCmpOpToCInt GE = #const SCMP_CMP_GE
-argCmpOpToCInt GT = #const SCMP_CMP_GT
-argCmpOpToCInt MASQUED_EQ = #const SCMP_CMP_MASKED_EQ
-
 instance Storable ArgCmp where
     sizeOf _ = #{size struct scmp_arg_cmp}
     alignment _ = alignment (undefined :: CInt)
@@ -153,18 +182,6 @@ instance Storable ArgCmp where
         #{poke struct scmp_arg_cmp, datum_a} p $ argCmpDatumA cmp
         #{poke struct scmp_arg_cmp, datum_b} p $ argCmpDatumB cmp
 
-seccomp_rule_add_array :: Ptr CFilterCtx -> Action -> SysCall -> [ArgCmp] -> IO CInt
-seccomp_rule_add_array ctx action sysCall argCmps =
-    allocaArray (length argCmps) add
-  where
-    add ptr = do
-        pokeArray ptr argCmps
-        c_seccomp_rule_add_array
-          ctx
-          (actionToC action)
-          (sysCallToC sysCall)
-          (fromIntegral (length argCmps))
-          ptr
 
 data SysCall =
       SCsocket --		-101

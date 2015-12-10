@@ -1,12 +1,12 @@
 module Main where
 
+import Foreign.Ptr (nullPtr)
+import System.Posix.IO as IO
+import System.Posix.Process (forkProcess, getProcessStatus, ProcessStatus(..))
+import System.Posix.Signals (sigSYS)
 import Test.Tasty
 import Test.Tasty.HUnit
 import qualified System.Linux.Seccomp as S
-import Foreign.Ptr (nullPtr)
-import System.Posix.Process (forkProcess, getProcessStatus, ProcessStatus(..))
-import System.Posix.IO as IO
-import System.Posix.Signals (sigSYS)
 
 main :: IO ()
 main = defaultMain unitTests
