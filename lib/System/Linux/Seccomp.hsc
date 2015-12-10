@@ -14,6 +14,7 @@ module System.Linux.Seccomp
    , seccomp_reset
    , seccomp_rule_add_array
    , seccomp_load
+   , seccomp_merge
    , seccomp_export_pfc
    , seccomp_release
    , seccomp_syscall_priority
@@ -81,6 +82,9 @@ seccomp_reset ctx action = c_seccomp_reset ctx (actionToC action)
 seccomp_load ::  Ptr CFilterCtx -> IO CInt
 seccomp_load ctx = c_seccomp_load ctx
 
+seccomp_merge ::  Ptr CFilterCtx -> Ptr CFilterCtx -> IO CInt
+seccomp_merge dst src = c_seccomp_merge dst src
+
 --  scmp_filter_ctx seccomp_init(uint32_t def_action);
 foreign import ccall unsafe "seccomp_init"
     c_seccomp_init :: CULong -> IO (Ptr CFilterCtx)
@@ -91,6 +95,9 @@ foreign import ccall unsafe "seccomp_release"
 
 foreign import ccall "seccomp_reset"
     c_seccomp_reset :: Ptr CFilterCtx -> CULong -> IO CInt
+
+foreign import ccall "seccomp_merge"
+    c_seccomp_merge :: Ptr CFilterCtx -> Ptr CFilterCtx -> IO CInt
 
 -- int seccomp_syscall_priority(scmp_filter_ctx ctx,
 --                              int syscall, uint8_t priority);
