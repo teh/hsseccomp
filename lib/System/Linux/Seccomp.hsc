@@ -7,7 +7,9 @@ Stability   : provisional
 Portability : non-portable (requires Linux)
 
 This module provides partial bindings to libseccomp. It is very low
-level, modeled closely after the c library.
+level, modeled somewhat after the c library.
+
+Requires kernel 3.13 with backported seccomp or newer.
 
 Missing:
 
@@ -263,9 +265,10 @@ data SysCall =
     | SCfdatasync
     | SCsync_file_range2
     | SCsync_file_range
-    | SCtimerfd_create
-    | SCtimerfd_settime
-    | SCtimerfd_gettime
+-- TODO enable when we force minimum kernel version to be > 3.13.
+--    | SCtimerfd_create
+--    | SCtimerfd_settime
+--    | SCtimerfd_gettime
     | SCutimensat
     | SCacct
     | SCcapget
@@ -282,7 +285,8 @@ data SysCall =
     | SCnanosleep
     | SCgetitimer
     | SCsetitimer
-    | SCkexec_load
+-- TODO enable when we force minimum kernel version to be > 3.13.
+--    | SCkexec_load
     | SCinit_module
     | SCdelete_module
     | SCtimer_create
@@ -434,10 +438,9 @@ data SysCall =
     | SCprocess_vm_writev
     | SCkcmp
     | SCfinit_module
-    | SCsched_setattr
-    | SCsched_getattr
-    | SCrenameat2
-    | SCmemfd_create
+--    | SCsched_setattr
+--    | SCsched_getattr
+--    | SCrenameat2
     | SCopen
     | SClink
     | SCunlink
@@ -478,7 +481,6 @@ data SysCall =
     | SCepoll_wait
     | SCustat
     | SCvfork
-    | SColdwait4
     | SCrecv
     | SCsend
     | SCbdflush
@@ -582,9 +584,9 @@ sysCallToC x = case x of
     SCfdatasync -> #const SCMP_SYS(fdatasync)
     SCsync_file_range2 -> #const SCMP_SYS(sync_file_range2)
     SCsync_file_range -> #const SCMP_SYS(sync_file_range)
-    SCtimerfd_create -> #const SCMP_SYS(timerfd_create)
-    SCtimerfd_settime -> #const SCMP_SYS(timerfd_settime)
-    SCtimerfd_gettime -> #const SCMP_SYS(timerfd_gettime)
+--    SCtimerfd_create -> #const SCMP_SYS(timerfd_create)
+--    SCtimerfd_settime -> #const SCMP_SYS(timerfd_settime)
+--    SCtimerfd_gettime -> #const SCMP_SYS(timerfd_gettime)
     SCutimensat -> #const SCMP_SYS(utimensat)
     SCacct -> #const SCMP_SYS(acct)
     SCcapget -> #const SCMP_SYS(capget)
@@ -601,7 +603,7 @@ sysCallToC x = case x of
     SCnanosleep -> #const SCMP_SYS(nanosleep)
     SCgetitimer -> #const SCMP_SYS(getitimer)
     SCsetitimer -> #const SCMP_SYS(setitimer)
-    SCkexec_load -> #const SCMP_SYS(kexec_load)
+--    SCkexec_load -> #const SCMP_SYS(kexec_load)
     SCinit_module -> #const SCMP_SYS(init_module)
     SCdelete_module -> #const SCMP_SYS(delete_module)
     SCtimer_create -> #const SCMP_SYS(timer_create)
@@ -753,10 +755,9 @@ sysCallToC x = case x of
     SCprocess_vm_writev -> #const SCMP_SYS(process_vm_writev)
     SCkcmp -> #const SCMP_SYS(kcmp)
     SCfinit_module -> #const SCMP_SYS(finit_module)
-    SCsched_setattr -> #const SCMP_SYS(sched_setattr)
-    SCsched_getattr -> #const SCMP_SYS(sched_getattr)
-    SCrenameat2 -> #const SCMP_SYS(renameat2)
-    SCmemfd_create -> #const SCMP_SYS(memfd_create)
+--    SCsched_setattr -> #const SCMP_SYS(sched_setattr)
+--    SCsched_getattr -> #const SCMP_SYS(sched_getattr)
+--    SCrenameat2 -> #const SCMP_SYS(renameat2)
     SCopen -> #const SCMP_SYS(open)
     SClink -> #const SCMP_SYS(link)
     SCunlink -> #const SCMP_SYS(unlink)
@@ -792,7 +793,6 @@ sysCallToC x = case x of
     SCepoll_wait -> #const SCMP_SYS(epoll_wait)
     SCustat -> #const SCMP_SYS(ustat)
     SCvfork -> #const SCMP_SYS(vfork)
-    SColdwait4 -> #const SCMP_SYS(oldwait4)
     SCrecv -> #const SCMP_SYS(recv)
     SCsend -> #const SCMP_SYS(send)
     SCbdflush -> #const SCMP_SYS(bdflush)
