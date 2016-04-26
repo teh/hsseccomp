@@ -7,7 +7,7 @@ Stability   : provisional
 Portability : non-portable (requires Linux)
 
 This module provides partial bindings to libseccomp. It is very low
-level, modelled closely after the c library.
+level, modeled closely after the c library.
 
 Missing:
 
@@ -184,369 +184,638 @@ instance Storable ArgCmp where
 
 
 data SysCall =
-      SCsocket --		-101
-    | SCbind --		-102
-    | SCconnect --		-103
-    | SClisten --		-104
-    | SCaccept --		-105
-    | SCgetsockname --	-106
-    | SCgetpeername --	-107
-    | SCsocketpair --	-108
-    | SCsend --		-109
-    | SCrecv --		-110
-    | SCsendto --		-111
-    | SCrecvfrom --		-112
-    | SCshutdown --		-113
-    | SCsetsockopt --	-114
-    | SCgetsockopt --	-115
-    | SCsendmsg --		-116
-    | SCrecvmsg --		-117
-    | SCaccept4 --		-118
-    | SCrecvmmsg --		-119
-    | SCsendmmsg --		-120
-    | SCsemop --		-201
-    | SCsemget --		-202
-    | SCsemctl --		-203
-    | SCsemtimedop --	-204
-    | SCmsgsnd --		-211
-    | SCmsgrcv --		-212
-    | SCmsgget --		-213
-    | SCmsgctl --		-214
-    | SCshmat --		-221
-    | SCshmdt --		-222
-    | SCshmget --		-223
-    | SCshmctl --		-224
-    | SCarch_prctl --	-10001
-    | SCbdflush --		-10002
-    | SCbreak --		-10003
-    | SCchown32 --		-10004
-    | SCepoll_ctl_old --	-10005
-    | SCepoll_wait_old --	-10006
-    | SCfadvise64_64 --	-10007
-    | SCfchown32 --		-10008
-    | SCfcntl64 --		-10009
-    | SCfstat64 --		-10010
-    | SCfstatat64 --		-10011
-    | SCfstatfs64 --		-10012
-    | SCftime --		-10013
-    | SCftruncate64 --	-10014
-    | SCgetegid32 --		-10015
-    | SCgeteuid32 --		-10016
-    | SCgetgid32 --		-10017
-    | SCgetgroups32 --	-10018
-    | SCgetresgid32 --	-10019
-    | SCgetresuid32 --	-10020
-    | SCgetuid32 --		-10021
-    | SCgtty --		-10022
-    | SCidle --		-10023
-    | SCipc --		-10024
-    | SClchown32 --		-10025
-    | SC_llseek --		-10026
-    | SClock --		-10027
-    | SClstat64 --		-10028
-    | SCmmap2 --		-10029
-    | SCmpx --		-10030
-    | SCnewfstatat --	-10031
-    | SC_newselect --	-10032
-    | SCnice --		-10033
-    | SColdfstat --		-10034
-    | SColdlstat --		-10035
-    | SColdolduname --	-10036
-    | SColdstat --		-10037
-    | SColduname --		-10038
-    | SCprof --		-10039
-    | SCprofil --		-10040
-    | SCreaddir --		-10041
-    | SCsecurity --		-10042
-    | SCsendfile64 --	-10043
-    | SCsetfsgid32 --	-10044
-    | SCsetfsuid32 --	-10045
-    | SCsetgid32 --		-10046
-    | SCsetgroups32 --	-10047
-    | SCsetregid32 --	-10048
-    | SCsetresgid32 --	-10049
-    | SCsetresuid32 --	-10050
-    | SCsetreuid32 --	-10051
-    | SCsetuid32 --		-10052
-    | SCsgetmask --		-10053
-    | SCsigaction --		-10054
-    | SCsignal --		-10055
-    | SCsigpending --	-10056
-    | SCsigprocmask --	-10057
-    | SCsigreturn --		-10058
-    | SCsigsuspend --	-10059
-    | SCsocketcall --	-10060
-    | SCssetmask --		-10061
-    | SCstat64 --		-10062
-    | SCstatfs64 --		-10063
-    | SCstime --		-10064
-    | SCstty --		-10065
-    | SCtruncate64 --	-10066
-    | SCtuxcall --		-10067
-    | SCugetrlimit --	-10068
-    | SCulimit --		-10069
-    | SCumount --		-10070
-    | SCvm86 --		-10071
-    | SCvm86old --		-10072
-    | SCwaitpid --		-10073
-    | SCcreate_module --	-10074
-    | SCget_kernel_syms --	-10075
-    | SCget_thread_area --	-10076
-    | SCnfsservctl --	-10077
-    | SCquery_module --	-10078
-    | SCset_thread_area --	-10079
-    | SC_sysctl --		-10080
-    | SCuselib --		-10081
-    | SCvserver --		-10082
-    | SCarm_fadvise64_64 --	-10083
-    | SCarm_sync_file_range --	-10084
-    | SCpciconfig_iobase --	-10086
-    | SCpciconfig_read --	-10087
-    | SCpciconfig_write --	-10088
-    | SCsync_file_range2 --	-10089
-    | SCsyscall --		-10090
-    | SCafs_syscall --	-10091
-    | SCfadvise64 --		-10092
-    | SCgetpmsg --		-10093
-    | SCioperm --		-10094
-    | SCiopl --		-10095
-    | SCmigrate_pages --	-10097
-    | SCmodify_ldt --	-10098
-    | SCputpmsg --		-10099
-    | SCsync_file_range --	-10100
-    | SCselect --		-10101
-    | SCvfork --		-10102
-    | SCcachectl --		-10103
-    | SCcacheflush --	-10104
-    | SCsysmips --		-10106
-    | SCtimerfd --		-10107
-    | SCtime --		-10108
-    | SCgetrandom --		-10109
-    | SCmemfd_create --	-10110
-    | SCkexec_file_load --	-10111
-    | SCsysfs --		-10145
-    | SColdwait4 --		-10146
-    | SCaccess --		-10147
-    | SCalarm --		-10148
-    | SCchmod --		-10149
-    | SCchown --		-10150
-    | SCcreat --		-10151
-    | SCdup2 --		-10152
-    | SCepoll_create --	-10153
-    | SCepoll_wait --	-10154
-    | SCeventfd --		-10155
-    | SCfork --		-10156
-    | SCfutimesat --		-10157
-    | SCgetdents --		-10158
-    | SCgetpgrp --		-10159
-    | SCinotify_init --	-10160
-    | SClchown --		-10161
-    | SClink --		-10162
-    | SClstat --		-10163
-    | SCmkdir --		-10164
-    | SCmknod --		-10165
-    | SCopen --		-10166
-    | SCpause --		-10167
-    | SCpipe --		-10168
-    | SCpoll --		-10169
-    | SCreadlink --		-10170
-    | SCrename --		-10171
-    | SCrmdir --		-10172
-    | SCsignalfd --		-10173
-    | SCstat --		-10174
-    | SCsymlink --		-10175
-    | SCunlink --		-10176
-    | SCustat --		-10177
-    | SCutime --		-10178
-    | SCutimes --		-10179
-    | SCgetrlimit --		-10180
-    | SCmmap --		-10181
-    | SCbreakpoint --	-10182
-    | SCset_tls --		-10183
-    | SCusr26 --		-10184
-    | SCusr32 --		-10185
-
+      SCio_setup
+    | SCio_destroy
+    | SCio_submit
+    | SCio_cancel
+    | SCio_getevents
+    | SCsetxattr
+    | SClsetxattr
+    | SCfsetxattr
+    | SCgetxattr
+    | SClgetxattr
+    | SCfgetxattr
+    | SClistxattr
+    | SCllistxattr
+    | SCflistxattr
+    | SCremovexattr
+    | SClremovexattr
+    | SCfremovexattr
+    | SCgetcwd
+    | SClookup_dcookie
+    | SCeventfd2
+    | SCepoll_create1
+    | SCepoll_ctl
+    | SCepoll_pwait
+    | SCdup
+    | SCdup3
+    | SCinotify_init1
+    | SCinotify_add_watch
+    | SCinotify_rm_watch
+    | SCioctl
+    | SCioprio_set
+    | SCioprio_get
+    | SCflock
+    | SCmknodat
+    | SCmkdirat
+    | SCunlinkat
+    | SCsymlinkat
+    | SClinkat
+    | SCrenameat
+    | SCumount2
+    | SCmount
+    | SCpivot_root
+    | SCnfsservctl
+    | SCfallocate
+    | SCfaccessat
+    | SCchdir
+    | SCfchdir
+    | SCchroot
+    | SCfchmod
+    | SCfchmodat
+    | SCfchownat
+    | SCfchown
+    | SCopenat
+    | SCclose
+    | SCvhangup
+    | SCpipe2
+    | SCquotactl
+    | SCgetdents64
+    | SCread
+    | SCwrite
+    | SCreadv
+    | SCwritev
+    | SCpread64
+    | SCpwrite64
+    | SCpreadv
+    | SCpwritev
+    | SCpselect6
+    | SCppoll
+    | SCsignalfd4
+    | SCvmsplice
+    | SCsplice
+    | SCtee
+    | SCreadlinkat
+    | SCsync
+    | SCfsync
+    | SCfdatasync
+    | SCsync_file_range2
+    | SCsync_file_range
+    | SCtimerfd_create
+    | SCtimerfd_settime
+    | SCtimerfd_gettime
+    | SCutimensat
+    | SCacct
+    | SCcapget
+    | SCcapset
+    | SCpersonality
+    | SCexit
+    | SCexit_group
+    | SCwaitid
+    | SCset_tid_address
+    | SCunshare
+    | SCfutex
+    | SCset_robust_list
+    | SCget_robust_list
+    | SCnanosleep
+    | SCgetitimer
+    | SCsetitimer
+    | SCkexec_load
+    | SCinit_module
+    | SCdelete_module
+    | SCtimer_create
+    | SCtimer_gettime
+    | SCtimer_getoverrun
+    | SCtimer_settime
+    | SCtimer_delete
+    | SCclock_settime
+    | SCclock_gettime
+    | SCclock_getres
+    | SCclock_nanosleep
+    | SCsyslog
+    | SCptrace
+    | SCsched_setparam
+    | SCsched_setscheduler
+    | SCsched_getscheduler
+    | SCsched_getparam
+    | SCsched_setaffinity
+    | SCsched_getaffinity
+    | SCsched_yield
+    | SCsched_get_priority_max
+    | SCsched_get_priority_min
+    | SCsched_rr_get_interval
+    | SCrestart_syscall
+    | SCkill
+    | SCtkill
+    | SCtgkill
+    | SCsigaltstack
+    | SCrt_sigsuspend
+    | SCrt_sigaction
+    | SCrt_sigprocmask
+    | SCrt_sigpending
+    | SCrt_sigtimedwait
+    | SCrt_sigqueueinfo
+    | SCrt_sigreturn
+    | SCsetpriority
+    | SCgetpriority
+    | SCreboot
+    | SCsetregid
+    | SCsetgid
+    | SCsetreuid
+    | SCsetuid
+    | SCsetresuid
+    | SCgetresuid
+    | SCsetresgid
+    | SCgetresgid
+    | SCsetfsuid
+    | SCsetfsgid
+    | SCtimes
+    | SCsetpgid
+    | SCgetpgid
+    | SCgetsid
+    | SCsetsid
+    | SCgetgroups
+    | SCsetgroups
+    | SCuname
+    | SCsethostname
+    | SCsetdomainname
+    | SCgetrlimit
+    | SCsetrlimit
+    | SCgetrusage
+    | SCumask
+    | SCprctl
+    | SCgetcpu
+    | SCgettimeofday
+    | SCsettimeofday
+    | SCadjtimex
+    | SCgetpid
+    | SCgetppid
+    | SCgetuid
+    | SCgeteuid
+    | SCgetgid
+    | SCgetegid
+    | SCgettid
+    | SCsysinfo
+    | SCmq_open
+    | SCmq_unlink
+    | SCmq_timedsend
+    | SCmq_timedreceive
+    | SCmq_notify
+    | SCmq_getsetattr
+    | SCmsgget
+    | SCmsgctl
+    | SCmsgrcv
+    | SCmsgsnd
+    | SCsemget
+    | SCsemctl
+    | SCsemtimedop
+    | SCsemop
+    | SCshmget
+    | SCshmctl
+    | SCshmat
+    | SCshmdt
+    | SCsocket
+    | SCsocketpair
+    | SCbind
+    | SClisten
+    | SCaccept
+    | SCconnect
+    | SCgetsockname
+    | SCgetpeername
+    | SCsendto
+    | SCrecvfrom
+    | SCsetsockopt
+    | SCgetsockopt
+    | SCshutdown
+    | SCsendmsg
+    | SCrecvmsg
+    | SCreadahead
+    | SCbrk
+    | SCmunmap
+    | SCmremap
+    | SCadd_key
+    | SCrequest_key
+    | SCkeyctl
+    | SCclone
+    | SCexecve
+    | SCswapon
+    | SCswapoff
+    | SCmprotect
+    | SCmsync
+    | SCmlock
+    | SCmunlock
+    | SCmlockall
+    | SCmunlockall
+    | SCmincore
+    | SCmadvise
+    | SCremap_file_pages
+    | SCmbind
+    | SCget_mempolicy
+    | SCset_mempolicy
+    | SCmigrate_pages
+    | SCmove_pages
+    | SCrt_tgsigqueueinfo
+    | SCperf_event_open
+    | SCaccept4
+    | SCrecvmmsg
+    | SCwait4
+    | SCprlimit64
+    | SCfanotify_init
+    | SCfanotify_mark
+    | SCname_to_handle_at
+    | SCopen_by_handle_at
+    | SCclock_adjtime
+    | SCsyncfs
+    | SCsetns
+    | SCsendmmsg
+    | SCprocess_vm_readv
+    | SCprocess_vm_writev
+    | SCkcmp
+    | SCfinit_module
+    | SCsched_setattr
+    | SCsched_getattr
+    | SCrenameat2
+    | SCmemfd_create
+    | SCopen
+    | SClink
+    | SCunlink
+    | SCmknod
+    | SCchmod
+    | SCchown
+    | SCmkdir
+    | SCrmdir
+    | SClchown
+    | SCaccess
+    | SCrename
+    | SCreadlink
+    | SCsymlink
+    | SCutimes
+    | SCpipe
+    | SCdup2
+    | SCepoll_create
+    | SCinotify_init
+    | SCeventfd
+    | SCsignalfd
+    | SCsendfile
+    | SCftruncate
+    | SCtruncate
+    | SCfstat
+    | SCfcntl
+    | SCfstatfs
+    | SCstatfs
+    | SCalarm
+    | SCgetpgrp
+    | SCpause
+    | SCtime
+    | SCutime
+    | SCcreat
+    | SCgetdents
+    | SCfutimesat
+    | SCselect
+    | SCpoll
+    | SCepoll_wait
+    | SCustat
+    | SCvfork
+    | SColdwait4
+    | SCrecv
+    | SCsend
+    | SCbdflush
+    | SCumount
+    | SCuselib
+    | SC_sysctl
+    | SCfork
+    | SClseek
+    | SCnewfstatat
+    | SCmmap
+    | SCfadvise64
+    | SCstat
+    | SClstat
+    | SCfcntl64
+    | SCtruncate64
+    | SCftruncate64
+    | SCsendfile64
+    | SCfstatat64
+    | SCfstat64
+    | SCmmap2
+    | SCfadvise64_64
+    | SCstat64
+    | SClstat64
 
 sysCallToC :: SysCall -> CLong
 sysCallToC x = case x of
-    SCsocket -> #const SCMP_SYS(socket)
-    SCbind -> #const SCMP_SYS(bind)
-    SCconnect -> #const SCMP_SYS(connect)
-    SClisten -> #const SCMP_SYS(listen)
-    SCaccept -> #const SCMP_SYS(accept)
-    SCgetsockname -> #const SCMP_SYS(getsockname)
-    SCgetpeername -> #const SCMP_SYS(getpeername)
-    SCsocketpair -> #const SCMP_SYS(socketpair)
-    SCsend -> #const SCMP_SYS(send)
-    SCrecv -> #const SCMP_SYS(recv)
-    SCsendto -> #const SCMP_SYS(sendto)
-    SCrecvfrom -> #const SCMP_SYS(recvfrom)
-    SCshutdown -> #const SCMP_SYS(shutdown)
-    SCsetsockopt -> #const SCMP_SYS(setsockopt)
-    SCgetsockopt -> #const SCMP_SYS(getsockopt)
-    SCsendmsg -> #const SCMP_SYS(sendmsg)
-    SCrecvmsg -> #const SCMP_SYS(recvmsg)
-    SCaccept4 -> #const SCMP_SYS(accept4)
-    SCrecvmmsg -> #const SCMP_SYS(recvmmsg)
-    SCsendmmsg -> #const SCMP_SYS(sendmmsg)
-    SCsemop -> #const SCMP_SYS(semop)
+    SCio_setup -> #const SCMP_SYS(io_setup)
+    SCio_destroy -> #const SCMP_SYS(io_destroy)
+    SCio_submit -> #const SCMP_SYS(io_submit)
+    SCio_cancel -> #const SCMP_SYS(io_cancel)
+    SCio_getevents -> #const SCMP_SYS(io_getevents)
+    SCsetxattr -> #const SCMP_SYS(setxattr)
+    SClsetxattr -> #const SCMP_SYS(lsetxattr)
+    SCfsetxattr -> #const SCMP_SYS(fsetxattr)
+    SCgetxattr -> #const SCMP_SYS(getxattr)
+    SClgetxattr -> #const SCMP_SYS(lgetxattr)
+    SCfgetxattr -> #const SCMP_SYS(fgetxattr)
+    SClistxattr -> #const SCMP_SYS(listxattr)
+    SCllistxattr -> #const SCMP_SYS(llistxattr)
+    SCflistxattr -> #const SCMP_SYS(flistxattr)
+    SCremovexattr -> #const SCMP_SYS(removexattr)
+    SClremovexattr -> #const SCMP_SYS(lremovexattr)
+    SCfremovexattr -> #const SCMP_SYS(fremovexattr)
+    SCgetcwd -> #const SCMP_SYS(getcwd)
+    SClookup_dcookie -> #const SCMP_SYS(lookup_dcookie)
+    SCeventfd2 -> #const SCMP_SYS(eventfd2)
+    SCepoll_create1 -> #const SCMP_SYS(epoll_create1)
+    SCepoll_ctl -> #const SCMP_SYS(epoll_ctl)
+    SCepoll_pwait -> #const SCMP_SYS(epoll_pwait)
+    SCdup -> #const SCMP_SYS(dup)
+    SCdup3 -> #const SCMP_SYS(dup3)
+    SCinotify_init1 -> #const SCMP_SYS(inotify_init1)
+    SCinotify_add_watch -> #const SCMP_SYS(inotify_add_watch)
+    SCinotify_rm_watch -> #const SCMP_SYS(inotify_rm_watch)
+    SCioctl -> #const SCMP_SYS(ioctl)
+    SCioprio_set -> #const SCMP_SYS(ioprio_set)
+    SCioprio_get -> #const SCMP_SYS(ioprio_get)
+    SCflock -> #const SCMP_SYS(flock)
+    SCmknodat -> #const SCMP_SYS(mknodat)
+    SCmkdirat -> #const SCMP_SYS(mkdirat)
+    SCunlinkat -> #const SCMP_SYS(unlinkat)
+    SCsymlinkat -> #const SCMP_SYS(symlinkat)
+    SClinkat -> #const SCMP_SYS(linkat)
+    SCrenameat -> #const SCMP_SYS(renameat)
+    SCumount2 -> #const SCMP_SYS(umount2)
+    SCmount -> #const SCMP_SYS(mount)
+    SCpivot_root -> #const SCMP_SYS(pivot_root)
+    SCnfsservctl -> #const SCMP_SYS(nfsservctl)
+    SCfallocate -> #const SCMP_SYS(fallocate)
+    SCfaccessat -> #const SCMP_SYS(faccessat)
+    SCchdir -> #const SCMP_SYS(chdir)
+    SCfchdir -> #const SCMP_SYS(fchdir)
+    SCchroot -> #const SCMP_SYS(chroot)
+    SCfchmod -> #const SCMP_SYS(fchmod)
+    SCfchmodat -> #const SCMP_SYS(fchmodat)
+    SCfchownat -> #const SCMP_SYS(fchownat)
+    SCfchown -> #const SCMP_SYS(fchown)
+    SCopenat -> #const SCMP_SYS(openat)
+    SCclose -> #const SCMP_SYS(close)
+    SCvhangup -> #const SCMP_SYS(vhangup)
+    SCpipe2 -> #const SCMP_SYS(pipe2)
+    SCquotactl -> #const SCMP_SYS(quotactl)
+    SCgetdents64 -> #const SCMP_SYS(getdents64)
+    SCread -> #const SCMP_SYS(read)
+    SCwrite -> #const SCMP_SYS(write)
+    SCreadv -> #const SCMP_SYS(readv)
+    SCwritev -> #const SCMP_SYS(writev)
+    SCpread64 -> #const SCMP_SYS(pread64)
+    SCpwrite64 -> #const SCMP_SYS(pwrite64)
+    SCpreadv -> #const SCMP_SYS(preadv)
+    SCpwritev -> #const SCMP_SYS(pwritev)
+    SCpselect6 -> #const SCMP_SYS(pselect6)
+    SCppoll -> #const SCMP_SYS(ppoll)
+    SCsignalfd4 -> #const SCMP_SYS(signalfd4)
+    SCvmsplice -> #const SCMP_SYS(vmsplice)
+    SCsplice -> #const SCMP_SYS(splice)
+    SCtee -> #const SCMP_SYS(tee)
+    SCreadlinkat -> #const SCMP_SYS(readlinkat)
+    SCsync -> #const SCMP_SYS(sync)
+    SCfsync -> #const SCMP_SYS(fsync)
+    SCfdatasync -> #const SCMP_SYS(fdatasync)
+    SCsync_file_range2 -> #const SCMP_SYS(sync_file_range2)
+    SCsync_file_range -> #const SCMP_SYS(sync_file_range)
+    SCtimerfd_create -> #const SCMP_SYS(timerfd_create)
+    SCtimerfd_settime -> #const SCMP_SYS(timerfd_settime)
+    SCtimerfd_gettime -> #const SCMP_SYS(timerfd_gettime)
+    SCutimensat -> #const SCMP_SYS(utimensat)
+    SCacct -> #const SCMP_SYS(acct)
+    SCcapget -> #const SCMP_SYS(capget)
+    SCcapset -> #const SCMP_SYS(capset)
+    SCpersonality -> #const SCMP_SYS(personality)
+    SCexit -> #const SCMP_SYS(exit)
+    SCexit_group -> #const SCMP_SYS(exit_group)
+    SCwaitid -> #const SCMP_SYS(waitid)
+    SCset_tid_address -> #const SCMP_SYS(set_tid_address)
+    SCunshare -> #const SCMP_SYS(unshare)
+    SCfutex -> #const SCMP_SYS(futex)
+    SCset_robust_list -> #const SCMP_SYS(set_robust_list)
+    SCget_robust_list -> #const SCMP_SYS(get_robust_list)
+    SCnanosleep -> #const SCMP_SYS(nanosleep)
+    SCgetitimer -> #const SCMP_SYS(getitimer)
+    SCsetitimer -> #const SCMP_SYS(setitimer)
+    SCkexec_load -> #const SCMP_SYS(kexec_load)
+    SCinit_module -> #const SCMP_SYS(init_module)
+    SCdelete_module -> #const SCMP_SYS(delete_module)
+    SCtimer_create -> #const SCMP_SYS(timer_create)
+    SCtimer_gettime -> #const SCMP_SYS(timer_gettime)
+    SCtimer_getoverrun -> #const SCMP_SYS(timer_getoverrun)
+    SCtimer_settime -> #const SCMP_SYS(timer_settime)
+    SCtimer_delete -> #const SCMP_SYS(timer_delete)
+    SCclock_settime -> #const SCMP_SYS(clock_settime)
+    SCclock_gettime -> #const SCMP_SYS(clock_gettime)
+    SCclock_getres -> #const SCMP_SYS(clock_getres)
+    SCclock_nanosleep -> #const SCMP_SYS(clock_nanosleep)
+    SCsyslog -> #const SCMP_SYS(syslog)
+    SCptrace -> #const SCMP_SYS(ptrace)
+    SCsched_setparam -> #const SCMP_SYS(sched_setparam)
+    SCsched_setscheduler -> #const SCMP_SYS(sched_setscheduler)
+    SCsched_getscheduler -> #const SCMP_SYS(sched_getscheduler)
+    SCsched_getparam -> #const SCMP_SYS(sched_getparam)
+    SCsched_setaffinity -> #const SCMP_SYS(sched_setaffinity)
+    SCsched_getaffinity -> #const SCMP_SYS(sched_getaffinity)
+    SCsched_yield -> #const SCMP_SYS(sched_yield)
+    SCsched_get_priority_max -> #const SCMP_SYS(sched_get_priority_max)
+    SCsched_get_priority_min -> #const SCMP_SYS(sched_get_priority_min)
+    SCsched_rr_get_interval -> #const SCMP_SYS(sched_rr_get_interval)
+    SCrestart_syscall -> #const SCMP_SYS(restart_syscall)
+    SCkill -> #const SCMP_SYS(kill)
+    SCtkill -> #const SCMP_SYS(tkill)
+    SCtgkill -> #const SCMP_SYS(tgkill)
+    SCsigaltstack -> #const SCMP_SYS(sigaltstack)
+    SCrt_sigsuspend -> #const SCMP_SYS(rt_sigsuspend)
+    SCrt_sigaction -> #const SCMP_SYS(rt_sigaction)
+    SCrt_sigprocmask -> #const SCMP_SYS(rt_sigprocmask)
+    SCrt_sigpending -> #const SCMP_SYS(rt_sigpending)
+    SCrt_sigtimedwait -> #const SCMP_SYS(rt_sigtimedwait)
+    SCrt_sigqueueinfo -> #const SCMP_SYS(rt_sigqueueinfo)
+    SCrt_sigreturn -> #const SCMP_SYS(rt_sigreturn)
+    SCsetpriority -> #const SCMP_SYS(setpriority)
+    SCgetpriority -> #const SCMP_SYS(getpriority)
+    SCreboot -> #const SCMP_SYS(reboot)
+    SCsetregid -> #const SCMP_SYS(setregid)
+    SCsetgid -> #const SCMP_SYS(setgid)
+    SCsetreuid -> #const SCMP_SYS(setreuid)
+    SCsetuid -> #const SCMP_SYS(setuid)
+    SCsetresuid -> #const SCMP_SYS(setresuid)
+    SCgetresuid -> #const SCMP_SYS(getresuid)
+    SCsetresgid -> #const SCMP_SYS(setresgid)
+    SCgetresgid -> #const SCMP_SYS(getresgid)
+    SCsetfsuid -> #const SCMP_SYS(setfsuid)
+    SCsetfsgid -> #const SCMP_SYS(setfsgid)
+    SCtimes -> #const SCMP_SYS(times)
+    SCsetpgid -> #const SCMP_SYS(setpgid)
+    SCgetpgid -> #const SCMP_SYS(getpgid)
+    SCgetsid -> #const SCMP_SYS(getsid)
+    SCsetsid -> #const SCMP_SYS(setsid)
+    SCgetgroups -> #const SCMP_SYS(getgroups)
+    SCsetgroups -> #const SCMP_SYS(setgroups)
+    SCuname -> #const SCMP_SYS(uname)
+    SCsethostname -> #const SCMP_SYS(sethostname)
+    SCsetdomainname -> #const SCMP_SYS(setdomainname)
+    SCgetrlimit -> #const SCMP_SYS(getrlimit)
+    SCsetrlimit -> #const SCMP_SYS(setrlimit)
+    SCgetrusage -> #const SCMP_SYS(getrusage)
+    SCumask -> #const SCMP_SYS(umask)
+    SCprctl -> #const SCMP_SYS(prctl)
+    SCgetcpu -> #const SCMP_SYS(getcpu)
+    SCgettimeofday -> #const SCMP_SYS(gettimeofday)
+    SCsettimeofday -> #const SCMP_SYS(settimeofday)
+    SCadjtimex -> #const SCMP_SYS(adjtimex)
+    SCgetpid -> #const SCMP_SYS(getpid)
+    SCgetppid -> #const SCMP_SYS(getppid)
+    SCgetuid -> #const SCMP_SYS(getuid)
+    SCgeteuid -> #const SCMP_SYS(geteuid)
+    SCgetgid -> #const SCMP_SYS(getgid)
+    SCgetegid -> #const SCMP_SYS(getegid)
+    SCgettid -> #const SCMP_SYS(gettid)
+    SCsysinfo -> #const SCMP_SYS(sysinfo)
+    SCmq_open -> #const SCMP_SYS(mq_open)
+    SCmq_unlink -> #const SCMP_SYS(mq_unlink)
+    SCmq_timedsend -> #const SCMP_SYS(mq_timedsend)
+    SCmq_timedreceive -> #const SCMP_SYS(mq_timedreceive)
+    SCmq_notify -> #const SCMP_SYS(mq_notify)
+    SCmq_getsetattr -> #const SCMP_SYS(mq_getsetattr)
+    SCmsgget -> #const SCMP_SYS(msgget)
+    SCmsgctl -> #const SCMP_SYS(msgctl)
+    SCmsgrcv -> #const SCMP_SYS(msgrcv)
+    SCmsgsnd -> #const SCMP_SYS(msgsnd)
     SCsemget -> #const SCMP_SYS(semget)
     SCsemctl -> #const SCMP_SYS(semctl)
     SCsemtimedop -> #const SCMP_SYS(semtimedop)
-    SCmsgsnd -> #const SCMP_SYS(msgsnd)
-    SCmsgrcv -> #const SCMP_SYS(msgrcv)
-    SCmsgget -> #const SCMP_SYS(msgget)
-    SCmsgctl -> #const SCMP_SYS(msgctl)
-    SCshmat -> #const SCMP_SYS(shmat)
-    SCshmdt -> #const SCMP_SYS(shmdt)
+    SCsemop -> #const SCMP_SYS(semop)
     SCshmget -> #const SCMP_SYS(shmget)
     SCshmctl -> #const SCMP_SYS(shmctl)
-    SCarch_prctl -> #const SCMP_SYS(arch_prctl)
-    SCbdflush -> #const SCMP_SYS(bdflush)
-    SCbreak -> #const SCMP_SYS(break)
-    SCchown32 -> #const SCMP_SYS(chown32)
-    SCepoll_ctl_old -> #const SCMP_SYS(epoll_ctl_old)
-    SCepoll_wait_old -> #const SCMP_SYS(epoll_wait_old)
-    SCfadvise64_64 -> #const SCMP_SYS(fadvise64_64)
-    SCfchown32 -> #const SCMP_SYS(fchown32)
-    SCfcntl64 -> #const SCMP_SYS(fcntl64)
-    SCfstat64 -> #const SCMP_SYS(fstat64)
-    SCfstatat64 -> #const SCMP_SYS(fstatat64)
-    SCfstatfs64 -> #const SCMP_SYS(fstatfs64)
-    SCftime -> #const SCMP_SYS(ftime)
-    SCftruncate64 -> #const SCMP_SYS(ftruncate64)
-    SCgetegid32 -> #const SCMP_SYS(getegid32)
-    SCgeteuid32 -> #const SCMP_SYS(geteuid32)
-    SCgetgid32 -> #const SCMP_SYS(getgid32)
-    SCgetgroups32 -> #const SCMP_SYS(getgroups32)
-    SCgetresgid32 -> #const SCMP_SYS(getresgid32)
-    SCgetresuid32 -> #const SCMP_SYS(getresuid32)
-    SCgetuid32 -> #const SCMP_SYS(getuid32)
-    SCgtty -> #const SCMP_SYS(gtty)
-    SCidle -> #const SCMP_SYS(idle)
-    SCipc -> #const SCMP_SYS(ipc)
-    SClchown32 -> #const SCMP_SYS(lchown32)
-    SC_llseek -> #const SCMP_SYS(_llseek)
-    SClock -> #const SCMP_SYS(lock)
-    SClstat64 -> #const SCMP_SYS(lstat64)
-    SCmmap2 -> #const SCMP_SYS(mmap2)
-    SCmpx -> #const SCMP_SYS(mpx)
-    SCnewfstatat -> #const SCMP_SYS(newfstatat)
-    SC_newselect -> #const SCMP_SYS(_newselect)
-    SCnice -> #const SCMP_SYS(nice)
-    SColdfstat -> #const SCMP_SYS(oldfstat)
-    SColdlstat -> #const SCMP_SYS(oldlstat)
-    SColdolduname -> #const SCMP_SYS(oldolduname)
-    SColdstat -> #const SCMP_SYS(oldstat)
-    SColduname -> #const SCMP_SYS(olduname)
-    SCprof -> #const SCMP_SYS(prof)
-    SCprofil -> #const SCMP_SYS(profil)
-    SCreaddir -> #const SCMP_SYS(readdir)
-    SCsecurity -> #const SCMP_SYS(security)
-    SCsendfile64 -> #const SCMP_SYS(sendfile64)
-    SCsetfsgid32 -> #const SCMP_SYS(setfsgid32)
-    SCsetfsuid32 -> #const SCMP_SYS(setfsuid32)
-    SCsetgid32 -> #const SCMP_SYS(setgid32)
-    SCsetgroups32 -> #const SCMP_SYS(setgroups32)
-    SCsetregid32 -> #const SCMP_SYS(setregid32)
-    SCsetresgid32 -> #const SCMP_SYS(setresgid32)
-    SCsetresuid32 -> #const SCMP_SYS(setresuid32)
-    SCsetreuid32 -> #const SCMP_SYS(setreuid32)
-    SCsetuid32 -> #const SCMP_SYS(setuid32)
-    SCsgetmask -> #const SCMP_SYS(sgetmask)
-    SCsigaction -> #const SCMP_SYS(sigaction)
-    SCsignal -> #const SCMP_SYS(signal)
-    SCsigpending -> #const SCMP_SYS(sigpending)
-    SCsigprocmask -> #const SCMP_SYS(sigprocmask)
-    SCsigreturn -> #const SCMP_SYS(sigreturn)
-    SCsigsuspend -> #const SCMP_SYS(sigsuspend)
-    SCsocketcall -> #const SCMP_SYS(socketcall)
-    SCssetmask -> #const SCMP_SYS(ssetmask)
-    SCstat64 -> #const SCMP_SYS(stat64)
-    SCstatfs64 -> #const SCMP_SYS(statfs64)
-    SCstime -> #const SCMP_SYS(stime)
-    SCstty -> #const SCMP_SYS(stty)
-    SCtruncate64 -> #const SCMP_SYS(truncate64)
-    SCtuxcall -> #const SCMP_SYS(tuxcall)
-    SCugetrlimit -> #const SCMP_SYS(ugetrlimit)
-    SCulimit -> #const SCMP_SYS(ulimit)
-    SCumount -> #const SCMP_SYS(umount)
-    SCvm86 -> #const SCMP_SYS(vm86)
-    SCvm86old -> #const SCMP_SYS(vm86old)
-    SCwaitpid -> #const SCMP_SYS(waitpid)
-    SCcreate_module -> #const SCMP_SYS(create_module)
-    SCget_kernel_syms -> #const SCMP_SYS(get_kernel_syms)
-    SCget_thread_area -> #const SCMP_SYS(get_thread_area)
-    SCnfsservctl -> #const SCMP_SYS(nfsservctl)
-    SCquery_module -> #const SCMP_SYS(query_module)
-    SCset_thread_area -> #const SCMP_SYS(set_thread_area)
-    SC_sysctl -> #const SCMP_SYS(_sysctl)
-    SCuselib -> #const SCMP_SYS(uselib)
-    SCvserver -> #const SCMP_SYS(vserver)
-    SCarm_fadvise64_64 -> #const SCMP_SYS(arm_fadvise64_64)
-    SCarm_sync_file_range -> #const SCMP_SYS(arm_sync_file_range)
-    SCpciconfig_iobase -> #const SCMP_SYS(pciconfig_iobase)
-    SCpciconfig_read -> #const SCMP_SYS(pciconfig_read)
-    SCpciconfig_write -> #const SCMP_SYS(pciconfig_write)
-    SCsync_file_range2 -> #const SCMP_SYS(sync_file_range2)
-    SCsyscall -> #const SCMP_SYS(syscall)
-    SCafs_syscall -> #const SCMP_SYS(afs_syscall)
-    SCfadvise64 -> #const SCMP_SYS(fadvise64)
-    SCgetpmsg -> #const SCMP_SYS(getpmsg)
-    SCioperm -> #const SCMP_SYS(ioperm)
-    SCiopl -> #const SCMP_SYS(iopl)
+    SCshmat -> #const SCMP_SYS(shmat)
+    SCshmdt -> #const SCMP_SYS(shmdt)
+    SCsocket -> #const SCMP_SYS(socket)
+    SCsocketpair -> #const SCMP_SYS(socketpair)
+    SCbind -> #const SCMP_SYS(bind)
+    SClisten -> #const SCMP_SYS(listen)
+    SCaccept -> #const SCMP_SYS(accept)
+    SCconnect -> #const SCMP_SYS(connect)
+    SCgetsockname -> #const SCMP_SYS(getsockname)
+    SCgetpeername -> #const SCMP_SYS(getpeername)
+    SCsendto -> #const SCMP_SYS(sendto)
+    SCrecvfrom -> #const SCMP_SYS(recvfrom)
+    SCsetsockopt -> #const SCMP_SYS(setsockopt)
+    SCgetsockopt -> #const SCMP_SYS(getsockopt)
+    SCshutdown -> #const SCMP_SYS(shutdown)
+    SCsendmsg -> #const SCMP_SYS(sendmsg)
+    SCrecvmsg -> #const SCMP_SYS(recvmsg)
+    SCreadahead -> #const SCMP_SYS(readahead)
+    SCbrk -> #const SCMP_SYS(brk)
+    SCmunmap -> #const SCMP_SYS(munmap)
+    SCmremap -> #const SCMP_SYS(mremap)
+    SCadd_key -> #const SCMP_SYS(add_key)
+    SCrequest_key -> #const SCMP_SYS(request_key)
+    SCkeyctl -> #const SCMP_SYS(keyctl)
+    SCclone -> #const SCMP_SYS(clone)
+    SCexecve -> #const SCMP_SYS(execve)
+    SCswapon -> #const SCMP_SYS(swapon)
+    SCswapoff -> #const SCMP_SYS(swapoff)
+    SCmprotect -> #const SCMP_SYS(mprotect)
+    SCmsync -> #const SCMP_SYS(msync)
+    SCmlock -> #const SCMP_SYS(mlock)
+    SCmunlock -> #const SCMP_SYS(munlock)
+    SCmlockall -> #const SCMP_SYS(mlockall)
+    SCmunlockall -> #const SCMP_SYS(munlockall)
+    SCmincore -> #const SCMP_SYS(mincore)
+    SCmadvise -> #const SCMP_SYS(madvise)
+    SCremap_file_pages -> #const SCMP_SYS(remap_file_pages)
+    SCmbind -> #const SCMP_SYS(mbind)
+    SCget_mempolicy -> #const SCMP_SYS(get_mempolicy)
+    SCset_mempolicy -> #const SCMP_SYS(set_mempolicy)
     SCmigrate_pages -> #const SCMP_SYS(migrate_pages)
-    SCmodify_ldt -> #const SCMP_SYS(modify_ldt)
-    SCputpmsg -> #const SCMP_SYS(putpmsg)
-    SCsync_file_range -> #const SCMP_SYS(sync_file_range)
-    SCselect -> #const SCMP_SYS(select)
-    SCvfork -> #const SCMP_SYS(vfork)
-    SCcachectl -> #const SCMP_SYS(cachectl)
-    SCcacheflush -> #const SCMP_SYS(cacheflush)
-    SCsysmips -> #const SCMP_SYS(sysmips)
-    SCtimerfd -> #const SCMP_SYS(timerfd)
-    SCtime -> #const SCMP_SYS(time)
-    SCgetrandom -> #const SCMP_SYS(getrandom)
+    SCmove_pages -> #const SCMP_SYS(move_pages)
+    SCrt_tgsigqueueinfo -> #const SCMP_SYS(rt_tgsigqueueinfo)
+    SCperf_event_open -> #const SCMP_SYS(perf_event_open)
+    SCaccept4 -> #const SCMP_SYS(accept4)
+    SCrecvmmsg -> #const SCMP_SYS(recvmmsg)
+    SCwait4 -> #const SCMP_SYS(wait4)
+    SCprlimit64 -> #const SCMP_SYS(prlimit64)
+    SCfanotify_init -> #const SCMP_SYS(fanotify_init)
+    SCfanotify_mark -> #const SCMP_SYS(fanotify_mark)
+    SCname_to_handle_at -> #const SCMP_SYS(name_to_handle_at)
+    SCopen_by_handle_at -> #const SCMP_SYS(open_by_handle_at)
+    SCclock_adjtime -> #const SCMP_SYS(clock_adjtime)
+    SCsyncfs -> #const SCMP_SYS(syncfs)
+    SCsetns -> #const SCMP_SYS(setns)
+    SCsendmmsg -> #const SCMP_SYS(sendmmsg)
+    SCprocess_vm_readv -> #const SCMP_SYS(process_vm_readv)
+    SCprocess_vm_writev -> #const SCMP_SYS(process_vm_writev)
+    SCkcmp -> #const SCMP_SYS(kcmp)
+    SCfinit_module -> #const SCMP_SYS(finit_module)
+    SCsched_setattr -> #const SCMP_SYS(sched_setattr)
+    SCsched_getattr -> #const SCMP_SYS(sched_getattr)
+    SCrenameat2 -> #const SCMP_SYS(renameat2)
     SCmemfd_create -> #const SCMP_SYS(memfd_create)
-    SCkexec_file_load -> #const SCMP_SYS(kexec_file_load)
-    SCsysfs -> #const SCMP_SYS(sysfs)
-    SColdwait4 -> #const SCMP_SYS(oldwait4)
-    SCaccess -> #const SCMP_SYS(access)
-    SCalarm -> #const SCMP_SYS(alarm)
+    SCopen -> #const SCMP_SYS(open)
+    SClink -> #const SCMP_SYS(link)
+    SCunlink -> #const SCMP_SYS(unlink)
+    SCmknod -> #const SCMP_SYS(mknod)
     SCchmod -> #const SCMP_SYS(chmod)
     SCchown -> #const SCMP_SYS(chown)
-    SCcreat -> #const SCMP_SYS(creat)
+    SCmkdir -> #const SCMP_SYS(mkdir)
+    SCrmdir -> #const SCMP_SYS(rmdir)
+    SClchown -> #const SCMP_SYS(lchown)
+    SCaccess -> #const SCMP_SYS(access)
+    SCrename -> #const SCMP_SYS(rename)
+    SCreadlink -> #const SCMP_SYS(readlink)
+    SCsymlink -> #const SCMP_SYS(symlink)
+    SCutimes -> #const SCMP_SYS(utimes)
+    SCpipe -> #const SCMP_SYS(pipe)
     SCdup2 -> #const SCMP_SYS(dup2)
     SCepoll_create -> #const SCMP_SYS(epoll_create)
-    SCepoll_wait -> #const SCMP_SYS(epoll_wait)
-    SCeventfd -> #const SCMP_SYS(eventfd)
-    SCfork -> #const SCMP_SYS(fork)
-    SCfutimesat -> #const SCMP_SYS(futimesat)
-    SCgetdents -> #const SCMP_SYS(getdents)
-    SCgetpgrp -> #const SCMP_SYS(getpgrp)
     SCinotify_init -> #const SCMP_SYS(inotify_init)
-    SClchown -> #const SCMP_SYS(lchown)
-    SClink -> #const SCMP_SYS(link)
-    SClstat -> #const SCMP_SYS(lstat)
-    SCmkdir -> #const SCMP_SYS(mkdir)
-    SCmknod -> #const SCMP_SYS(mknod)
-    SCopen -> #const SCMP_SYS(open)
-    SCpause -> #const SCMP_SYS(pause)
-    SCpipe -> #const SCMP_SYS(pipe)
-    SCpoll -> #const SCMP_SYS(poll)
-    SCreadlink -> #const SCMP_SYS(readlink)
-    SCrename -> #const SCMP_SYS(rename)
-    SCrmdir -> #const SCMP_SYS(rmdir)
+    SCeventfd -> #const SCMP_SYS(eventfd)
     SCsignalfd -> #const SCMP_SYS(signalfd)
-    SCstat -> #const SCMP_SYS(stat)
-    SCsymlink -> #const SCMP_SYS(symlink)
-    SCunlink -> #const SCMP_SYS(unlink)
-    SCustat -> #const SCMP_SYS(ustat)
+    SCfcntl -> #const SCMP_SYS(fcntl)
+    SCfadvise64 -> #const SCMP_SYS(fadvise64)
+    SCalarm -> #const SCMP_SYS(alarm)
+    SCgetpgrp -> #const SCMP_SYS(getpgrp)
+    SCpause -> #const SCMP_SYS(pause)
+    SCtime -> #const SCMP_SYS(time)
     SCutime -> #const SCMP_SYS(utime)
-    SCutimes -> #const SCMP_SYS(utimes)
-    SCgetrlimit -> #const SCMP_SYS(getrlimit)
+    SCcreat -> #const SCMP_SYS(creat)
+    SCgetdents -> #const SCMP_SYS(getdents)
+    SCfutimesat -> #const SCMP_SYS(futimesat)
+    SCselect -> #const SCMP_SYS(select)
+    SCpoll -> #const SCMP_SYS(poll)
+    SCepoll_wait -> #const SCMP_SYS(epoll_wait)
+    SCustat -> #const SCMP_SYS(ustat)
+    SCvfork -> #const SCMP_SYS(vfork)
+    SColdwait4 -> #const SCMP_SYS(oldwait4)
+    SCrecv -> #const SCMP_SYS(recv)
+    SCsend -> #const SCMP_SYS(send)
+    SCbdflush -> #const SCMP_SYS(bdflush)
+    SCumount -> #const SCMP_SYS(umount)
+    SCuselib -> #const SCMP_SYS(uselib)
+    SC_sysctl -> #const SCMP_SYS(_sysctl)
+    SCfork -> #const SCMP_SYS(fork)
+    SCstatfs -> #const SCMP_SYS(statfs)
+    SCfstatfs -> #const SCMP_SYS(fstatfs)
+    SCtruncate -> #const SCMP_SYS(truncate)
+    SCftruncate -> #const SCMP_SYS(ftruncate)
+    SClseek -> #const SCMP_SYS(lseek)
+    SCsendfile -> #const SCMP_SYS(sendfile)
+    SCnewfstatat -> #const SCMP_SYS(newfstatat)
+    SCfstat -> #const SCMP_SYS(fstat)
     SCmmap -> #const SCMP_SYS(mmap)
-    SCbreakpoint -> #const SCMP_SYS(breakpoint)
-    SCset_tls -> #const SCMP_SYS(set_tls)
-    SCusr26 -> #const SCMP_SYS(usr26)
-    SCusr32 -> #const SCMP_SYS(usr32)
+    SCstat -> #const SCMP_SYS(stat)
+    SClstat -> #const SCMP_SYS(lstat)
+    SCfcntl64 -> #const SCMP_SYS(fcntl64)
+    SCtruncate64 -> #const SCMP_SYS(truncate64)
+    SCftruncate64 -> #const SCMP_SYS(ftruncate64)
+    SCsendfile64 -> #const SCMP_SYS(sendfile64)
+    SCfstatat64 -> #const SCMP_SYS(fstatat64)
+    SCfstat64 -> #const SCMP_SYS(fstat64)
+    SCmmap2 -> #const SCMP_SYS(mmap2)
+    SCfadvise64_64 -> #const SCMP_SYS(fadvise64_64)
+    SCstat64 -> #const SCMP_SYS(stat64)
+    SClstat64 -> #const SCMP_SYS(lstat64)
