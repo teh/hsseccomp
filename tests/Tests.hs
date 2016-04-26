@@ -4,6 +4,7 @@ import Foreign.Ptr (nullPtr)
 import System.Posix.IO as IO
 import System.Posix.Process (forkProcess, getProcessStatus, ProcessStatus(..))
 import System.Posix.Signals (sigSYS)
+import System.Exit (ExitCode(..))
 import Test.Tasty
 import Test.Tasty.HUnit
 import qualified System.Linux.Seccomp as S
@@ -73,7 +74,7 @@ assertNotTerminated :: IO () -> Assertion
 assertNotTerminated f = do
     pid <- forkProcess f
     result <- getProcessStatus True False pid
-    assertBool ("unexpected terminate: " ++ show result) (result /= Just (Terminated sigSYS False))
+    assertBool ("unexpected terminate: " ++ show result) (result == Just (Exited ExitSuccess))
 
 
 assertTerminated :: IO () -> Assertion
