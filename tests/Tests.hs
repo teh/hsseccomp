@@ -39,8 +39,8 @@ whitelistHaskellRuntimeCalls ctx = do
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCexit_group []
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCselect []
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCshmctl []
-    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCwrite []
-    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCprctl []
+    --_ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCwrite []
+    --_ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCprctl []
     return ()
 
 
