@@ -16,25 +16,47 @@ unitTests = testGroup "Unit tests"
   [ testCase "init" $ do
         ctx <- S.seccomp_init S.SCMP_ACT_KILL
         if ctx /= nullPtr then return () else assertFailure "seccomp_init returned 0"
-  , testCase "kill on any open"  $ assertTerminated killOnAnyOpen
-  , testCase "kill on write"  $ assertTerminated killOpenWrite
+  , testCase "allow open"  $ assertNotTerminated allowOpen
+  , testCase "kill on open for write"  $ assertTerminated killOpenWrite
   , testCase "change priority" $ do
         ctx <- S.seccomp_init S.SCMP_ACT_KILL
         r <- S.seccomp_syscall_priority ctx S.SCopen 8
         assertBool "return code /= 0" (r == 0)
   ]
 
+
 -- test export
 -- S.seccomp_export_pfc ctx 2
 
-killOnAnyOpen :: Assertion
-killOnAnyOpen = do
+whitelistHaskellRuntimeCalls :: S.FilterContext -> IO ()
+whitelistHaskellRuntimeCalls ctx = do
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCclock_gettime []
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCrt_sigprocmask []
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCrt_sigaction []
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCtimer_settime []
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCtimer_delete []
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCexit_group []
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCselect []
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCshmctl []
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCwrite []
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCprctl []
+    return ()
+
+
+allowOpen :: Assertion
+allowOpen = do
     ctx <- S.seccomp_init S.SCMP_ACT_KILL
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCopen []
+
+    -- TODO it's annoying that we need to white list so many syscalls
+    -- for the Haskell runtime but I can't think of a better solution
+    -- ATM.
+    whitelistHaskellRuntimeCalls ctx
     _ <- S.seccomp_load ctx
-    S.seccomp_release ctx
     _ <- IO.openFd "/dev/null" IO.ReadOnly Nothing IO.defaultFileFlags
+    S.seccomp_release ctx
     return ()
+
 
 killOpenWrite :: Assertion
 killOpenWrite = do
@@ -45,6 +67,14 @@ killOpenWrite = do
     S.seccomp_release ctx
     _ <- IO.openFd "/dev/null" IO.WriteOnly Nothing IO.defaultFileFlags
     return ()
+
+
+assertNotTerminated :: IO () -> Assertion
+assertNotTerminated f = do
+    pid <- forkProcess f
+    result <- getProcessStatus True False pid
+    assertBool ("unexpected terminate: " ++ show result) (result /= Just (Terminated sigSYS False))
+
 
 assertTerminated :: IO () -> Assertion
 assertTerminated f = do

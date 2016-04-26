@@ -41,6 +41,7 @@ module System.Linux.Seccomp
    , SysCall(..)
    , ArgCmp(..)
    , ArgCmpOp(..)
+   , FilterContext
    ) where
 
 import Foreign
@@ -61,6 +62,7 @@ data Action =
     | SCMP_ACT_ALLOW
 
 type CFilterCtx = ()
+type FilterContext = Ptr CFilterCtx
 
 seccomp_init :: Action -> IO (Ptr CFilterCtx)
 seccomp_init action = c_seccomp_init (actionToC action)
