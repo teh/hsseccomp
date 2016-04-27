@@ -1,10 +1,11 @@
 module Main where
 
 import Foreign.Ptr (nullPtr)
-import System.Posix.IO as IO
+import System.Posix.IO as PosixIO
 import System.Posix.Process (forkProcess, getProcessStatus, ProcessStatus(..))
 import System.Posix.Signals (sigSYS)
-import System.Exit (exitFailure, ExitCode(..))
+import System.Exit (exitFailure, exitSuccess, ExitCode(..))
+import qualified Control.Exception (catch, SomeException)
 import qualified System.IO
 import qualified Foreign.C.Error as ErrNo
 import Control.Monad (when)
@@ -23,6 +24,7 @@ unitTests = testGroup "Unit tests"
   , testCase "allow open"  $ assertNotTerminated allowOpen
   , testCase "allow writing to only stdout and stderr"  $ assertNotTerminated allowStdOutStdErr
   , testCase "kill on open for write"  $ assertTerminated killOpenWrite
+  , testCase "setting errno instead of killing"  $ assertNotTerminated actErrno
   , testCase "change priority" $ do
         ctx <- S.seccomp_init S.SCMP_ACT_KILL
         r <- S.seccomp_syscall_priority ctx S.SCopen 8
@@ -65,7 +67,7 @@ allowOpen = do
     -- ATM.
     whitelistHaskellRuntimeCalls ctx
     _ <- S.seccomp_load ctx
-    _ <- IO.openFd "/dev/null" IO.ReadOnly Nothing IO.defaultFileFlags
+    _ <- PosixIO.openFd "/dev/null" PosixIO.ReadOnly Nothing PosixIO.defaultFileFlags
     S.seccomp_release ctx
     putStrLn "Hello World, this should be allowed"
     return ()
@@ -89,7 +91,33 @@ killOpenWrite = do
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_KILL S.SCopen [S.ArgCmp 1 S.MASQUED_EQ 0x3 0x1]
     _ <- S.seccomp_load ctx
     S.seccomp_release ctx
-    _ <- IO.openFd "/dev/null" IO.WriteOnly Nothing IO.defaultFileFlags
+    _ <- PosixIO.openFd "/dev/null" PosixIO.WriteOnly Nothing PosixIO.defaultFileFlags
+    return ()
+
+actErrno :: Assertion
+actErrno = do
+    ErrNo.resetErrno
+    -- trying to capture the syscall that should fail with an errno we can test
+    ctx <- S.seccomp_init (S.SCMP_ACT_ERRNO 42)
+    whitelistHaskellRuntimeCalls ctx
+    _ <- S.seccomp_load ctx
+    S.seccomp_release ctx
+    errno <- ErrNo.getErrno
+    when (errno /= ErrNo.eOK) exitFailure
+    --triggering prohibited action
+    _ <- Control.Exception.catch (System.IO.openFile "/dev/null" System.IO.ReadMode) $ \e -> do
+            putStrLn ("caugth error: " ++ show (e::Control.Exception.SomeException))
+            ErrNo.Errno errno <- ErrNo.getErrno
+            if (errno == 42)
+            then exitSuccess
+            else (do
+                    putStrLn ("unexpected errno: " ++ show errno)
+                    exitFailure
+                  )
+            --return dummy handle to make it compile. not reached
+            return System.IO.stdin
+    putStrLn "unreachable"
+    exitFailure
     return ()
 
 
