@@ -21,8 +21,8 @@ unitTests = testGroup "Unit tests"
         ctx <- S.seccomp_init S.SCMP_ACT_KILL
         if ctx /= nullPtr then return () else assertFailure "seccomp_init returned 0"
   , testCase "allow open"  $ assertNotTerminated allowOpen
+  , testCase "allow writing to only stdout and stderr"  $ assertNotTerminated allowStdOutStdErr
   , testCase "kill on open for write"  $ assertTerminated killOpenWrite
-  , testCase "allow writing to stdout but not stderr"  $ assertNotTerminated allowStdOutKillStdErr
   , testCase "change priority" $ do
         ctx <- S.seccomp_init S.SCMP_ACT_KILL
         r <- S.seccomp_syscall_priority ctx S.SCopen 8
@@ -39,13 +39,17 @@ whitelistHaskellRuntimeCalls ctx = do
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCclock_gettime []
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCrt_sigprocmask []
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCrt_sigaction []
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCrt_sigreturn []
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCtimer_settime []
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCtimer_delete []
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCclock_gettime []
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCexit_group []
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCselect []
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCshmctl []
     -- only allow write for stdout (fd 1)
-    ret <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCwrite [S.ArgCmp 0 S.EQ 1 0] -- TODO what is argCmpDatumB?
+    ret <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCwrite [S.ArgCmp 0 S.EQ 1 42] -- TODO what is argCmpDatumB?
+    -- only allow write for stderr (fd 2)
+    ret <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCwrite [S.ArgCmp 0 S.EQ 2 42] -- TODO what is argCmpDatumB?
     putStrLn $ "S.seccomp_rule_add_array returned " ++ show ret
     --_ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCprctl []
     return ()
@@ -66,25 +70,17 @@ allowOpen = do
     putStrLn "Hello World, this should be allowed"
     return ()
 
-allowStdOutKillStdErr :: Assertion
-allowStdOutKillStdErr = do
-    ErrNo.resetErrno
-    -- trying to capture the syscall that should fail with an errno we can test
-    ctx <- S.seccomp_init (S.SCMP_ACT_ERRNO 42)
+allowStdOutStdErr :: Assertion
+allowStdOutStdErr = do
+    ctx <- S.seccomp_init S.SCMP_ACT_KILL
     whitelistHaskellRuntimeCalls ctx
     _ <- S.seccomp_load ctx
     S.seccomp_release ctx
     putStrLn "Hello World, this should be allowed"
     System.IO.hPutStrLn System.IO.stdout "This must also work"
-    errno <- ErrNo.getErrno
-    when (errno /= ErrNo.eOK) exitFailure
-    System.IO.hPutStrLn System.IO.stdout "All is fine so far, ..."
-    System.IO.hPutStrLn System.IO.stderr "This must fail"
-    errno <- ErrNo.getErrno
-    when (errno /= ErrNo.Errno 42) $ do
-            System.IO.hPutStrLn System.IO.stdout "unexpected errno"
-            exitFailure
+    System.IO.hPutStrLn System.IO.stderr "This must also work"
     return ()
+ 
 
 killOpenWrite :: Assertion
 killOpenWrite = do
