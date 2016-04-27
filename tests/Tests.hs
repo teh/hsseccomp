@@ -47,7 +47,7 @@ whitelistHaskellRuntimeCalls ctx = do
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCclock_gettime []
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCexit_group []
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCselect []
-    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCshmctl []
+    --_ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCshmctl []
     -- only allow write for stdout (fd 1)
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCwrite [S.ArgCmp 0 S.EQ 1 43] -- TODO what is argCmpDatumB (here: 43)?
     --_ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCprctl []
