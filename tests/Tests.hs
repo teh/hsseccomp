@@ -49,10 +49,7 @@ whitelistHaskellRuntimeCalls ctx = do
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCselect []
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCshmctl []
     -- only allow write for stdout (fd 1)
-    ret <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCwrite [S.ArgCmp 0 S.EQ 1 42] -- TODO what is argCmpDatumB?
-    -- only allow write for stderr (fd 2)
-    ret <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCwrite [S.ArgCmp 0 S.EQ 2 42] -- TODO what is argCmpDatumB?
-    putStrLn $ "S.seccomp_rule_add_array returned " ++ show ret
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCwrite [S.ArgCmp 0 S.EQ 1 43] -- TODO what is argCmpDatumB (here: 43)?
     --_ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCprctl []
     return ()
 
@@ -76,6 +73,8 @@ allowStdOutStdErr :: Assertion
 allowStdOutStdErr = do
     ctx <- S.seccomp_init S.SCMP_ACT_KILL
     whitelistHaskellRuntimeCalls ctx
+    -- allow write for stderr (fd 2)
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCwrite [S.ArgCmp 0 S.EQ 2 43] -- TODO what is argCmpDatumB (here: 43)?
     _ <- S.seccomp_load ctx
     S.seccomp_release ctx
     putStrLn "Hello World, this should be allowed"
@@ -104,7 +103,7 @@ actErrno = do
     S.seccomp_release ctx
     errno <- ErrNo.getErrno
     when (errno /= ErrNo.eOK) exitFailure
-    --triggering prohibited action
+    -- triggering prohibited action
     _ <- Control.Exception.catch (System.IO.openFile "/dev/null" System.IO.ReadMode) $ \e -> do
             putStrLn ("caugth error: " ++ show (e::Control.Exception.SomeException))
             ErrNo.Errno errno <- ErrNo.getErrno
@@ -114,7 +113,7 @@ actErrno = do
                     putStrLn ("unexpected errno: " ++ show errno)
                     exitFailure
                   )
-            --return dummy handle to make it compile. not reached
+            -- return dummy handle to make it compile. not reached
             return System.IO.stdin
     putStrLn "unreachable"
     exitFailure
