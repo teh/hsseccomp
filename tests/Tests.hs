@@ -21,10 +21,10 @@ unitTests = testGroup "Unit tests"
   [ testCase "init" $ do
         ctx <- S.seccomp_init S.SCMP_ACT_KILL
         if ctx /= nullPtr then return () else assertFailure "seccomp_init returned 0"
-  , testCase "allow open"  $ assertNotTerminated allowOpen
-  , testCase "allow writing to only stdout and stderr"  $ assertNotTerminated allowStdOutStdErr
+  , testCase "allow open"  $ assertExitSuccess allowOpen
+  , testCase "allow writing to only stdout and stderr"  $ assertExitSuccess allowStdOutStdErr
   , testCase "kill on open for write"  $ assertTerminated killOpenWrite
-  , testCase "setting errno instead of killing"  $ assertNotTerminated actErrno
+  , testCase "setting errno instead of killing"  $ assertExitSuccess actErrno
   , testCase "change priority" $ do
         ctx <- S.seccomp_init S.SCMP_ACT_KILL
         r <- S.seccomp_syscall_priority ctx S.SCopen 8
@@ -120,8 +120,8 @@ actErrno = do
     return ()
 
 
-assertNotTerminated :: IO () -> Assertion
-assertNotTerminated f = do
+assertExitSuccess :: IO () -> Assertion
+assertExitSuccess f = do
     pid <- forkProcess f
     result <- getProcessStatus True False pid
     assertBool ("unexpected terminate: " ++ show result) (result == Just (Exited ExitSuccess))
