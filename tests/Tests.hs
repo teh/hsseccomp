@@ -94,6 +94,7 @@ killOpenWrite = do
     ctx <- S.seccomp_init S.SCMP_ACT_ALLOW
     -- kill on write
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_KILL S.SCopenat [S.ArgCmp 2 S.MASQUED_EQ 0x3 0x1]
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_KILL S.SCopen [S.ArgCmp 1 S.MASQUED_EQ 0x3 0x1]
     _ <- S.seccomp_load ctx
     S.seccomp_release ctx
     _ <- PosixIO.openFd "/dev/null" PosixIO.WriteOnly Nothing PosixIO.defaultFileFlags
