@@ -63,6 +63,7 @@ whitelistHaskellRuntimeCalls ctx = do
 allowOpen :: Assertion
 allowOpen = do
     ctx <- S.seccomp_init S.SCMP_ACT_KILL
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCopen []
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCopenat []
 
     -- TODO it's annoying that we need to white list so many syscalls
