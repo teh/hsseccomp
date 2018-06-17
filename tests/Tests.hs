@@ -47,6 +47,9 @@ whitelistHaskellRuntimeCalls ctx = do
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCclock_gettime []
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCexit_group []
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCselect []
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCpoll []
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCgetrusage []
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCpause []
     -- TODO no idea what haskell is doing here. I guess it tries to find out whether stdout is an attached terminal
     -- uncomment when needed
     --_ <- Seccomp.seccomp_rule_add_array ctx Seccomp.SCMP_ACT_ALLOW Seccomp.SCioctl [Seccomp.ArgCmp 0 Seccomp.EQ 1 43, Seccomp.ArgCmp 1 Seccomp.EQ 0x5401 43]
@@ -61,6 +64,7 @@ allowOpen :: Assertion
 allowOpen = do
     ctx <- S.seccomp_init S.SCMP_ACT_KILL
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCopen []
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_ALLOW S.SCopenat []
 
     -- TODO it's annoying that we need to white list so many syscalls
     -- for the Haskell runtime but I can't think of a better solution
@@ -90,6 +94,7 @@ killOpenWrite :: Assertion
 killOpenWrite = do
     ctx <- S.seccomp_init S.SCMP_ACT_ALLOW
     -- kill on write
+    _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_KILL S.SCopenat [S.ArgCmp 2 S.MASQUED_EQ 0x3 0x1]
     _ <- S.seccomp_rule_add_array ctx S.SCMP_ACT_KILL S.SCopen [S.ArgCmp 1 S.MASQUED_EQ 0x3 0x1]
     _ <- S.seccomp_load ctx
     S.seccomp_release ctx
@@ -102,10 +107,9 @@ actErrno = do
     -- trying to capture the syscall that should fail with an errno we can test
     ctx <- S.seccomp_init (S.SCMP_ACT_ERRNO 42)
     whitelistHaskellRuntimeCalls ctx
-    _ <- S.seccomp_load ctx
+    res <- S.seccomp_load ctx
     S.seccomp_release ctx
-    errno <- ErrNo.getErrno
-    when (errno /= ErrNo.eOK) exitFailure
+    when (res /= 0) exitFailure
     -- triggering prohibited action
     _ <- Control.Exception.catch (System.IO.openFile "/dev/null" System.IO.ReadMode) $ \e -> do
             putStrLn ("caugth error: " ++ show (e::Control.Exception.SomeException))
@@ -134,4 +138,5 @@ assertTerminated :: IO () -> Assertion
 assertTerminated f = do
     pid <- forkProcess f
     result <- getProcessStatus True False pid
-    assertBool ("didn't terminate: " ++ show result) (result == Just (Terminated sigSYS False))
+    assertBool ("didn't terminate: " ++ show result) (result == Just (Terminated sigSYS False)
+                                                      || result == Just (Terminated sigSYS True))
